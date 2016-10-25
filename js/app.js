@@ -1,9 +1,14 @@
-(function() {
+(function() { //iffy
   'use strict';
 
+  // push api data to movies
   var movies = [];
 
+// update HTML funcionality
   var renderMovies = function() {
+    for (var i = 0; i < movies.length; i++) {
+      console.log(movies[i]);
+    }
     $('#listings').empty();
 
     for (var movie of movies) {
@@ -56,5 +61,39 @@
     }
   };
 
-  // ADD YOUR CODE HERE
+  // submission listener
+  $(function() {
+    $("#search_button").on("click", function(event) {
+      event.preventDefault();
+      // check if form is blank
+      if ($("#search").val()) {
+        // form is not blank, find results
+        searchResults($("#search").val());
+      } else {
+        // Toast message
+        Materialize.toast("search field is empty")
+      }
+      // reset form
+      $("#search").val("");
+    });
+  });
+
+  function searchResults(searchWord) {
+    var $xhr = $.getJSON('http://www.omdbapi.com/?t='+searchWord);
+    // use s instead of t
+    $xhr.done(function(data) {
+      // push a new movie object to the global movies variable
+      for (var key in data) {
+        console.log(key + " " + data[key]);
+      }
+      var movieObject = {
+        id: data["imdbID"],
+        poster: data["Poster"],
+        title: data["Title"],
+        year: data["Year"]
+      }
+      movies.push(movieObject);
+      renderMovies();
+    });
+  }
 })();
