@@ -79,21 +79,40 @@
   });
 
   function searchResults(searchWord) {
-    var $xhr = $.getJSON('http://www.omdbapi.com/?t='+searchWord);
-    // use s instead of t
+    var $xhr = $.getJSON('http://www.omdbapi.com/?s='+searchWord);
+
+    // get a reference to all of the movie IDs that match the search criteria
     $xhr.done(function(data) {
-      // push a new movie object to the global movies variable
-      for (var key in data) {
-        console.log(key + " " + data[key]);
+      var movieIDs = [];
+      for (var i = 0; i < data["Search"].length; i++) {
+        movieIDs.push(data["Search"][i]["imdbID"]);
       }
-      var movieObject = {
-        id: data["imdbID"],
-        poster: data["Poster"],
-        title: data["Title"],
-        year: data["Year"]
-      }
-      movies.push(movieObject);
-      renderMovies();
+
+      // build and push movie objects to be rendered
+      for (var i = 0; i < movieIDs.length; i++) {
+        var $xhrPlot = $.getJSON('http://www.omdbapi.com/?i='+movieIDs[i]);
+        $xhrPlot.done(function(data) {
+          var movieObj = {
+            id: data["imdbID"],
+            poster: data["Poster"],
+            title: data["Title"],
+            year: data["Year"],
+            plot: data["Plot"]
+          };
+
+          var validData = true;
+          for (var key in movieObj) {
+            if (movieObj[key] === "N/A") {
+              validData = false;
+            }
+          }
+
+          if (validData) {
+            movies.push(movieObj);
+            renderMovies();
+          }
+        });
+      };
     });
   }
 })();
